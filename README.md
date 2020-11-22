@@ -11,7 +11,7 @@ iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to-destination 127.0.0.1:8
 iptables -t nat -A OUTPUT -p tcp --dport 443 -j DNAT --to-destination 127.0.0.1:443
 
 # 丢弃本机 UDP 443 流量（防止 QUIC 连接）
-iptables -t nat -A OUTPUT -p udp -J DROP
+iptables -t nat -A OUTPUT -p udp --dport 443 -J DROP
 
 # 保存 iptables 规则
 netfilter-persistent save
