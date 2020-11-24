@@ -1,6 +1,12 @@
 # stream-extended
 ```
-# 绕过解锁机器
+# 安装程序
+curl -fsSL https://git.io/JkMmc | bash
+
+# 编辑配置文件
+nano /etc/stream-extended.json
+
+# 绕过解锁机器（注意修改这里的 IP 地址）
 iptables -t nat -A OUTPUT -d 1.1.1.1/32 -j RETURN
 
 # 绕过 stream-extended 程序
