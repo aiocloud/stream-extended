@@ -51,12 +51,14 @@ else
     OUT_ERROR "[错误] 不支持的操作系统！"
 fi
 
+cd ~
+
 OUT_ALERT "[信息] 下载程序中"
-cd ~ && rm -fr release
+rm -fr release && mkdir release && cd release
 wget -O release.zip https://github.com/aiocloud/stream-extended/releases/latest/download/release.zip || exit 1
 
 OUT_ALERT "[信息] 解压程序中"
-unzip release.zip && rm -f release.zip && cd release
+unzip release.zip && rm -f release.zip
 
 OUT_ALERT "[信息] 设置权限中"
 chmod +x stream-extended
