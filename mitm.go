@@ -216,9 +216,6 @@ func handleTLS(client net.Conn) {
 		// Extension Length
 		length = (int(data[offset]) << 8) + int(data[offset+1])
 		offset += 2
-		if size < offset+1 {
-			return
-		}
 
 		// Extension: Server Name
 		if name == 0 {
