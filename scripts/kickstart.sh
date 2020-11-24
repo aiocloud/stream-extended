@@ -70,8 +70,8 @@ OUT_ALERT "[提示] 复制程序中"
 cp -f stream-extended /usr/bin
 
 OUT_ALERT "[提示] 创建用户中"
-userdel -r -f stream-extended
-groupdel stream-extended
+userdel -r -f stream-extended > /dev/null 2>&1
+groupdel stream-extended > /dev/null 2>&1
 groupadd -g 1234 stream-extended
 useradd -M -s /bin/false -u 1234 -g 1234 stream-extended
 
