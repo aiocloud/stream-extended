@@ -1,0 +1,74 @@
+name: aioCloud CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.x
+
+      - name: ZIP
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install zip unzip -y
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        shell: bash
+        run: |
+          export GOROOT_FINAL=/usr
+          export CGO_ENABLED=1
+          export GOOS=linux
+          export GOARCH=amd64
+          go build -a -trimpath -asmflags "-s -w" -ldflags "-s -w" -o release/stream-extended
+          cp -f default.json release
+
+      - name: UPX Compress
+        uses: crazy-max/ghaction-upx@v1
+        with:
+          version: latest
+          file: release/stream-extended
+          args: --ultra-brute
+
+      - name: ZIP Compress
+        shell: bash
+        run: |
+          zip -9 -r release.zip release
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: release
+          path: release
+
+      - name: Checksum
+        shell: bash
+        run: |
+          echo "CHECKSUM=$(sha256sum release.zip | awk '{print $1}')" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          prerelease: true
+          draft: false
+          files: |
+            release.zip
+          body: |
+            [![](https://img.shields.io/badge/Telegram-Group-blue)](https://t.me/aioCloud) [![](https://img.shields.io/badge/Telegram-Channel-green)](https://t.me/aioCloud_channel)
+            ## 更新日志
+            * 将会很快更新
+
+            ## 校验和
+            | 文件名 | SHA256 |
+            | :-- | :-- |
+            | release.zip | ${{ env.CHECKSUM }} |
