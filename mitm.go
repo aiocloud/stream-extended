@@ -9,14 +9,16 @@ import (
 	"time"
 )
 
-func checkAllowDomain(name string) bool {
-	for i := 0; i < len(Data.Domain); i++ {
-		if strings.HasSuffix(name, Data.Domain[i]) {
-			return true
+func checkAllowDomain(name string) (bool, []string) {
+	for i := 0; i < len(Data); i++ {
+		for x := 0; x < len(Data[i].Domain); x++ {
+			if strings.HasSuffix(name, Data[i].Domain[x]) {
+				return true, Data[i].Remote
+			}
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func startHTTP() {
@@ -78,29 +80,31 @@ func handleHTTP(client net.Conn) {
 		}
 	}
 
-	if domain, ok := list["HOST"]; ok {
-		if !checkAllowDomain(domain) {
-			remote, err := net.Dial("tcp", net.JoinHostPort(list["HOST"], "80"))
-			if err != nil {
-				return
-			}
-			defer remote.Close()
-
-			if _, err := remote.Write(data); err != nil {
-				return
-			}
-			data = nil
-
-			Pipe(client, remote)
-			return
-		}
-	} else {
+	domain, ok := list["HOST"]
+	if !ok {
 		return
 	}
 
-	log.Printf("[APP][HTTP] %s <-> %s", client.RemoteAddr(), list["HOST"])
+	contains, remotes := checkAllowDomain(domain)
+	if !contains {
+		remote, err := net.Dial("tcp", net.JoinHostPort(domain, "80"))
+		if err != nil {
+			return
+		}
+		defer remote.Close()
 
-	remote, err := net.Dial("tcp", Data.Remote[0])
+		if _, err := remote.Write(data); err != nil {
+			return
+		}
+		data = nil
+
+		Pipe(client, remote)
+		return
+	}
+
+	log.Printf("[APP][HTTP] %s <-> %s", client.RemoteAddr(), domain)
+
+	remote, err := net.Dial("tcp", remotes[0])
 	if err != nil {
 		return
 	}
@@ -253,7 +257,8 @@ func handleTLS(client net.Conn) {
 		offset += length
 	}
 
-	if !checkAllowDomain(domain) {
+	contains, remotes := checkAllowDomain(domain)
+	if !contains {
 		remote, err := net.Dial("tcp", net.JoinHostPort(domain, "443"))
 		if err != nil {
 			return
@@ -271,7 +276,7 @@ func handleTLS(client net.Conn) {
 
 	log.Printf("[APP][TLS] %s <-> %s", client.RemoteAddr(), domain)
 
-	remote, err := net.Dial("tcp", Data.Remote[1])
+	remote, err := net.Dial("tcp", remotes[1])
 	if err != nil {
 		return
 	}

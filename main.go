@@ -12,17 +12,17 @@ import (
 )
 
 var (
+	verCode = "1.0.2"
+
 	flags struct {
 		Path    string
 		VerCode bool
 	}
 
-	Data struct {
-		Remote []string `json:"remotes"`
+	Data []struct {
 		Domain []string `json:"domains"`
+		Remote []string `json:"remotes"`
 	}
-
-	version = "1.0.2"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	if flags.VerCode {
-		fmt.Println(version)
+		fmt.Println(verCode)
 		return
 	}
 
