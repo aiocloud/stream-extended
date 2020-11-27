@@ -156,7 +156,7 @@ func handleTLS(client net.Conn) {
 
 	data := make([]byte, 1400)
 	size, err := client.Read(data)
-	if err != nil || size < 44 {
+	if err != nil || size <= 44 {
 		return
 	}
 	data = data[:size]
@@ -185,7 +185,7 @@ func handleTLS(client net.Conn) {
 	length := int(data[offset])
 	offset += 1
 	offset += length
-	if size < offset+1 {
+	if size <= offset+1 {
 		return
 	}
 
@@ -193,7 +193,7 @@ func handleTLS(client net.Conn) {
 	length = (int(data[offset]) << 8) + int(data[offset+1])
 	offset += 2
 	offset += length
-	if size < offset {
+	if size <= offset {
 		return
 	}
 
@@ -204,7 +204,7 @@ func handleTLS(client net.Conn) {
 
 	// Extension Length
 	offset += 2
-	if size < offset+1 {
+	if size <= offset+1 {
 		return
 	}
 
@@ -213,7 +213,7 @@ func handleTLS(client net.Conn) {
 		// Extension Type
 		name := (int(data[offset]) << 8) + int(data[offset+1])
 		offset += 2
-		if size < offset+1 {
+		if size <= offset+1 {
 			return
 		}
 
@@ -225,7 +225,7 @@ func handleTLS(client net.Conn) {
 		if name == 0 {
 			// Server Name List Length
 			offset += 2
-			if size < offset {
+			if size <= offset {
 				return
 			}
 
@@ -235,14 +235,14 @@ func handleTLS(client net.Conn) {
 				return
 			}
 			offset += 1
-			if size < offset+1 {
+			if size <= offset+1 {
 				return
 			}
 
 			// Server Name Length
 			length = (int(data[offset]) << 8) + int(data[offset+1])
 			offset += 2
-			if size < offset+length {
+			if size <= offset+length {
 				return
 			}
 
