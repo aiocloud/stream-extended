@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	verCode = "1.0.2"
+	verCode = "1.0.3"
 
 	flags struct {
 		Path    string
