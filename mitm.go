@@ -92,28 +92,18 @@ func handleHTTP(client net.Conn) {
 		return
 	}
 
+	var remote net.Conn
 	contains, remotes := checkAllowDomain(domain)
 	if !contains {
-		remote, err := net.Dial("tcp", net.JoinHostPort(domain, "80"))
-		if err != nil {
+		if remote, err = net.Dial("tcp", net.JoinHostPort(domain, "80")); err != nil {
 			return
 		}
-		defer remote.Close()
-
-		if _, err := remote.Write(data); err != nil {
+	} else {
+		if remote, err = net.Dial("tcp", remotes[0]); err != nil {
 			return
 		}
-		data = nil
 
-		Pipe(client, remote)
-		return
-	}
-
-	log.Printf("[APP][HTTP] %s <-> %s", client.RemoteAddr(), domain)
-
-	remote, err := net.Dial("tcp", remotes[0])
-	if err != nil {
-		return
+		log.Printf("[APP][HTTP] %s <-> %s", client.RemoteAddr(), domain)
 	}
 	defer remote.Close()
 
@@ -264,28 +254,18 @@ func handleTLS(client net.Conn) {
 		offset += length
 	}
 
+	var remote net.Conn
 	contains, remotes := checkAllowDomain(domain)
 	if !contains {
-		remote, err := net.Dial("tcp", net.JoinHostPort(domain, "443"))
-		if err != nil {
+		if remote, err = net.Dial("tcp", net.JoinHostPort(domain, "443")); err != nil {
 			return
 		}
-		defer remote.Close()
-
-		if _, err := remote.Write(data); err != nil {
+	} else {
+		if remote, err = net.Dial("tcp", remotes[1]); err != nil {
 			return
 		}
-		data = nil
 
-		Pipe(client, remote)
-		return
-	}
-
-	log.Printf("[APP][TLS] %s <-> %s", client.RemoteAddr(), domain)
-
-	remote, err := net.Dial("tcp", remotes[1])
-	if err != nil {
-		return
+		log.Printf("[APP][TLS] %s <-> %s", client.RemoteAddr(), domain)
 	}
 	defer remote.Close()
 
